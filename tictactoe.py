@@ -1,309 +1,286 @@
 # tictactoe.py
 
+import numpy as np 
 import display
+import random
 
 def main():
-    MainMenu menu;
-    menu.print_main_menu();
-    // Stores all possible sizes for the tic tac toe board
-    vector<int> sizes = {3,4,5,6,7};
-
-    // Dynamically allocate 2D vector to hold state of tic tac toe board
-    vector<vector<int>> state;
+    # Stores all possible sizes for the tic tac toe board
+    sizes = [3,4,5,6,7]
     
-    // Prints the board size options for the user
-    cout << "1: 3 X 3" << endl;
-    cout << "2: 4 X 4" << endl;
-    cout << "3: 5 X 5" << endl;
-    cout << "4: 6 X 6" << endl;
-    cout << "5: 7 X 7" << endl;
+    # Prints the board size options for the user
+    print("1: 3 X 3")
+    print("\n")
+    print("2: 4 X 4")
+    print("\n")
+    print("3: 5 X 5")
+    print("\n")
+    print("4: 6 X 6")
+    print("\n")
+    print("5: 7 X 7")
+    print("\n")
 
-    // Asks for user input on board size
-    int size_choice = 0;
-    cout << "Choose size of tic tac toe board:" << endl;
-    cin >> size_choice;
+    # Asks for user input on board size
+    size_choice = 0
+    print("Choose size of tic tac toe board:")
+    print("\n")
+    size_choice = input()
 
-    // If statement handles invalid user inputs
-    if ((size_choice < 1) || (size_choice > 5)) {
-        size_choice = 1;
-    }
+    # If statement handles invalid user inputs
+    if (int(size_choice) < 1) or (int(size_choice) > 5):
+        size_choice = 1
 
-    // Sets size of 2D array
-    int size = 0;
-    size = sizes[size_choice - 1];
-    state.resize(size);
+    # Sets size of 2D array
+    size = 0
+    size = sizes[int(size_choice) - 1]
+    state = np.zeros((size,size))
 
+    # Create instance of board display
+    board = display.Display(size)
 
-    // initializes each cell to a 0 to mean empty
-    for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
-            (state)[i].push_back(0);
-        }
-    }
+    #Print an empty board to start game
+    # winner is false
+    # X is player 1 and 2 is computer 
+    board.print_board(state)
+    winner = False
+    player = 1
+    computer = 2
 
-    // Create instance of board display
-    Display board(size);
+    # While there is no winner yet
+    # Keep playing the game
+    while winner == False:
+        # Ask user for the row and column of their move
+        row = 0
+        column = 0
+        print("Enter row and then column coordinate to make a move")
+        print("\n")
+        row, column = input().split(" ")
 
-    // Print an empty board to start game
-    // winner is false
-    // X is player 1 and 2 is computer 
-    board.print_board(state);
-    bool winner = false;
-    int player = 1;
-    int computer = 2;
+        print ("Going to check if valid move")
+        # Check if user input is a valid move
+        if(validMove(row, column, state, size) == False):
+            print("Move invalid! Try another location...")
+            print("\n")
+            continue
 
-    // While there is no winner yet
-    // Keep playing the game
-    while (!winner) {
-        // Ask user for the row and column of their move
-        int row = 0;
-        int column = 0;
-        cout << "Enter row and then column coordinate to make a move" << endl;
-        cin >> row;
-        cin >> column; 
+        # Update the state of the board
+        # Print the newly updated board
+        (state)[int(row)][int(column)] = 1
+        board.print_board(state)
 
-        // Check if user input is a valid move
-        if(!validMove(row, column, state, size)) {
-            cout << "Move invalid! Try another location..." << endl;
-            continue;
-        }
+        # Check if the most recent move creates a win for the human player
+        if (checkWinner(row, column, state, size, player)):
+            print("Player " + str(player) + " Wins!")
+            print("\n")
+            winner = True
+            continue
 
-        // Update the state of the board
-        // Print the newly updated board
-        (state)[row][column] = 1;
-        board.print_board(state);
+        # Check for tie
+        count = 0
+        for i in range(size):
+            for j in range(size):
+                if (state[i][j] != 0):
+                    count = count + 1
 
-        // Check if the most recent move creates a win for the human player
-        if (checkWinner(row, column, state, size, player)) {
-            cout << "Player " << player << " Wins!" << endl;
-            winner = true;
-            continue;
-        }
+        if (count == (size * size)):
+            print("Tie! No winner!")
+            print("\n")
+            break
 
-        // Let computer make a random move
-        // Checks if computer wins
-        if(computerMove(state, size, computer, board)) {
-            cout << "Computer Wins!" << endl;
-            winner = true;
-            continue;
-        }
+        # Let computer make a random move
+        # Checks if computer wins
+        if (computerMove(state, size, computer, board)):
+            print("Computer Wins!")
+            print("\n")
+            winner = True
+            continue
 
-        // Check for tie
-        int count = 0;
-        for(int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                if (state[i][j] == 0) {
-                    count++;
-                }
-            }
-        }
+        # Check for tie
+        count = 0
+        for i in range(size):
+            for j in range(size):
+                if (state[i][j] != 0):
+                    count = count + 1
 
-        if (count == (size * size)) {
-            cout << "Tie! No winner!" << endl;
-            break;
-        }
-    }
-    return 0;
-}
+        if (count == (size * size)):
+            print("Tie! No winner!")
+            print("\n")
+            break
 
-// This function checks if the player input is even a valid move
-bool validMove(int row, int col, std::vector<std::vector<int>>& state, int size)
-{
-    // If the location is out of bounds
-    if (row > size - 1) {
-        return false;
-    }
+    return 0
 
-    if (col > size - 1) {
-        return false; 
-    }
+# This function checks if the player input is even a valid move
+def validMove(row, col, state, size):
+    # If the location is out of bounds
+    if int(row) > (size - 1):
+        return False
 
-    // If the location is already taken
-    if ((state)[row][col] != 0) {
-        return false;
-    }
-    return true;
-}
+    if int(col) > (size - 1):
+        return False 
 
-// This function handles the computer making a move
-// Also handles checking if computer wins games
-bool computerMove(std::vector<std::vector<int>>& state, int size, int player, Display& board) 
-{
-    int row = 0;
-    int col = 0;
+    # If the location is already taken
+    if ((state)[int(row)][int(col)] != 0):
+        return False
 
-    // Providing a seed value
-	srand((unsigned) time(NULL));
+    return True
 
-	// Get a random number for row
-	int random = rand() % size;
-    row = random;
+# This function handles the computer making a move
+# Also handles checking if computer wins games
+def computerMove(state, size, player, board):
+    row = 0
+    col = 0
 
-    // Get a random number for col
-	random = rand() % size;
-    col = random;
+    # Get a random number for row
+    ran = random.randrange(0, size)
+    row = ran
 
-    while(!validMove(row, col, state, size)) {
-        // Get a random number for row
-	    random = rand() % size;
-        row = random;
+    # Get a random number for col
+    ran = random.randrange(0, size)
+    col = ran
 
-        // Get a random number for col
-        random = rand() % size;
-        col = random;
-    }
+    while validMove(row, col, state, size) == False:
+        # Get a random number for row
+        ran = random.randrange(0, size)
+        row = ran
+        print(row)
 
-    // Update the state of the board
-    // Print the newly updated board
-    cout << "Computer moves to (" << row << ", " << col << ")"  << endl;
-    (state)[row][col] = 2;
-    board.print_board(state);
+        # Get a random number for col
+        ran = random.randrange(0, size)
+        col = ran
+        print(col)
 
-    // Check and return if computer wins
-    return checkWinner(row, col, state, size, player);
-}
+    # Update the state of the board
+    # Print the newly updated board
+    print("Computer moves to (" + str(row) + ", " + str(col) + ")")
+    print("\n")
+    (state)[int(row)][int(col)] = 2
+    board.print_board(state)
 
-// This function checks if most recent move results in a win
-bool checkWinner(int row, int col, std::vector<std::vector<int>>& state, int size, int player)
-{
-    // Check horizontal win
-    int count = 0;
+    # Check and return if computer wins
+    return checkWinner(row, col, state, size, player)
 
-    // Check right side of the column
-    int temp_col = col;
-    while (temp_col + 1 <= size - 1) {
-        temp_col = temp_col + 1;
-        if ((state)[row][temp_col] == player) {
-            count++;
-        }
-    }
-
-    // Check left side of the column
-    temp_col = col;
-    while (temp_col - 1 >= 0) {
-        temp_col = temp_col - 1;
-        if ((state)[row][temp_col] == player) {
-            count++;
-        }
-    }
-
-    // Reset temp_col
-    temp_col = col;
-
-    // Increment count by one to also count the most recent move
-    count++;
-
-    // If a row is all filled out then player is the winner
-    if (count == size) {
-        return true;
-    }
-
-    // Check vertical win
-    count = 0;
-
-    // Check above the row
-    int temp_row = row;
-    while (temp_row - 1 >= 0) {
-        temp_row = temp_row - 1;
-        if ((state)[temp_row][col] == player) {
-            count++;
-        }
-    }
-
-    // Check bottom of the row
-    temp_row = row;
-    while (temp_row + 1 <= size - 1) {
-        temp_row = temp_row + 1;
-        if ((state)[temp_row][col] == player) {
-            count++;
-        }
-    }
-
-    // Reset temp_row
-    temp_row = row;
-
-    // Increment count by one to also count the most recent move
-    count++;
-
-    // If a column is all filled out then player is the winner
-    if (count == size) {
-        return true;
-    }
-
-    // Check diagnol win
-    count = 0;
-
-    // Check bottom right
-    temp_row = row;
-    temp_col = col;
-    while ((temp_col + 1 <= size - 1) && (temp_row + 1 <= size - 1)) {
-        temp_col = temp_col + 1;
-        temp_row = temp_row + 1;
-        if ((state)[temp_row][temp_col] == player) {
-            count++;
-        }
-    }
-
-    // Check top left
-    temp_row = row;
-    temp_col = col;
-    while ((temp_col - 1 >= 0) && (temp_row - 1 >= 0)) {
-        temp_col = temp_col - 1;
-        temp_row = temp_row - 1;
-        if ((state)[temp_row][temp_col] == player) {
-            count++;
-        }
-    }
-
-    // Reset temp_row and temp_col
-    temp_row = row;
-    temp_col = col;
-
-    // Increment count by one to also count the most recent move
-    count++;
-
-    // If a diagnol is all filled out then player is the winner
-    if (count == size) {
-        return true;
-    }
-
-    // Check SECOND diagnol win
-    count = 0;
-
-    // Check bottom left
-    temp_row = row;
-    temp_col = col;
-    while ((temp_col - 1 >= 0) && (temp_row + 1 <= size - 1)) {
-        temp_col = temp_col - 1;
-        temp_row = temp_row + 1;
-        if ((state)[temp_row][temp_col] == player) {
-            count++;
-        }
-    }
-
-    // Check upper right
-    temp_row = row;
-    temp_col = col;
-    while ((temp_col + 1 <= size - 1) && (temp_row - 1 >= 0)) {
-        temp_col = temp_col + 1;
-        temp_row = temp_row - 1;
-        if ((state)[temp_row][temp_col] == player) {
-            count++;
-        }
-    }
-
-    // Reset temp_row and temp_col
-    temp_row = row;
-    temp_col = col;
-
-    // Increment count by one to also count the most recent move
-    count++;
-
-    // If a diagnol is all filled out then player is the winner
-    if (count == size) {
-        return true;
-    }
+# This function checks if most recent move results in a win
+def checkWinner(row, col, state, size, player):
     
-    // If no winner then return false
-    return false;
-}
+    # Check horizontal win
+    count = 0
+
+    # Check right side of the column
+    temp_col = col
+    while (int(temp_col) + 1) <= (size - 1):
+        temp_col = int(temp_col) + 1
+        if (state)[int(row)][int(temp_col)] == player:
+            count = count + 1
+
+    # Check left side of the column
+    temp_col = col
+    while (int(temp_col) - 1 >= 0):
+        temp_col = int(temp_col) - 1
+        if ((state)[int(row)][int(temp_col)] == player):
+            count = count + 1
+
+    # Reset temp_col
+    temp_col = col
+
+    # Increment count by one to also count the most recent move
+    count = count + 1
+
+    # If a row is all filled out then player is the winner
+    if (count == size):
+        return True
+
+    # Check vertical win
+    count = 0
+
+    # Check above the row
+    temp_row = row
+    while (int(temp_row) - 1 >= 0):
+        temp_row = int(temp_row) - 1
+        if ((state)[int(temp_row)][int(col)] == player):
+            count = count + 1
+
+    # Check bottom of the row
+    temp_row = row
+    while (int(temp_row) + 1 <= size - 1):
+        temp_row = int(temp_row) + 1
+        if ((state)[int(temp_row)][int(col)] == player):
+            count = count + 1
+
+    # Reset temp_row
+    temp_row = row
+
+    # Increment count by one to also count the most recent move
+    count = count + 1
+
+    # If a column is all filled out then player is the winner
+    if (count == size):
+        return True
+
+    # Check diagnol win
+    count = 0
+
+    # heck bottom right
+    temp_row = row
+    temp_col = col
+    while ((int(temp_col) + 1 <= size - 1) and (int(temp_row) + 1 <= size - 1)):
+        temp_col = int(temp_col) + 1
+        temp_row = int(temp_row) + 1
+        if ((state)[int(temp_row)][int(temp_col)] == player):
+            count = count + 1
+
+    # Check top left
+    temp_row = row
+    temp_col = col
+    while ((int(temp_col) - 1 >= 0) and (int(temp_row) - 1 >= 0)):
+        temp_col = int(temp_col) - 1
+        temp_row = int(temp_row) - 1
+        if ((state)[int(temp_row)][int(temp_col)] == player):
+            count = count + 1
+
+    # Reset temp_row and temp_col
+    temp_row = row
+    temp_col = col
+
+    # Increment count by one to also count the most recent move
+    count = count + 1
+
+    # If a diagnol is all filled out then player is the winner
+    if (count == size):
+        return True
+
+    # Check SECOND diagnol win
+    count = 0
+
+    # Check bottom left
+    temp_row = row
+    temp_col = col
+    while ((int(temp_col) - 1 >= 0) and (int(temp_row) + 1 <= size - 1)):
+        temp_col = int(temp_col) - 1
+        temp_row = int(temp_row) + 1
+        if ((state)[int(temp_row)][int(temp_col)] == player):
+            count = count + 1
+
+    # Check upper right
+    temp_row = row
+    temp_col = col
+    while ((int(temp_col) + 1 <= size - 1) and (int(temp_row) - 1 >= 0)):
+        temp_col = int(temp_col) + 1
+        temp_row = int(temp_row) - 1
+        if ((state)[int(temp_row)][int(temp_col)] == player):
+            count = count + 1
+
+    # Reset temp_row and temp_col
+    temp_row = row
+    temp_col = col
+
+    # Increment count by one to also count the most recent move
+    count = count + 1
+
+    # If a diagnol is all filled out then player is the winner
+    if (count == size):
+        return True
+    
+    # If no winner then return false
+    return False
+
+main()
